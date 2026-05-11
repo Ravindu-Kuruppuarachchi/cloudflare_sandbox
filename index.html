@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISA Sandbox App</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .card {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        button {
+            background-color: #0051c3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+        button:hover { background-color: #003d99; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h1>Internal Tools Sandbox</h1>
+        <p>Environment: <strong id="env-label">Production</strong></p>
+        <p>This is a test application deployed via Cloudflare Pages.</p>
+        
+        <button id="test-btn">Click to Test Interaction</button>
+        <p id="result-text"></p>
+    </div>
+
+    <script>
+        let count = 0;
+        document.getElementById('test-btn').addEventListener('click', () => {
+            count++;
+            document.getElementById('result-text').innerText = `Button clicked ${count} times.`;
+        });
+    </script>
+
+</body>
+</html>
