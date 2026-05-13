@@ -3,57 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ISA Sandbox App</title>
+    <title>Metrics Tester</title>
     <style>
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f4f4f9;
-            color: #333;
-        }
-        .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-        }
-        button {
-            background-color: #0051c3;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-        button:hover { background-color: #003d99; }
+        body { font-family: system-ui, sans-serif; max-width: 600px; margin: 50px auto; text-align: center; background-color: #f4f4f9; color: #333;}
+        .card { background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button { display: block; width: 100%; padding: 15px; margin: 10px 0; font-size: 16px; border: none; border-radius: 5px; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-normal { background-color: #0051c3; }
+        .btn-normal:hover { background-color: #003d99; }
+        .btn-heavy { background-color: #f59e0b; }
+        .btn-heavy:hover { background-color: #d97706; }
+        .btn-error { background-color: #dc2626; }
+        .btn-error:hover { background-color: #b91c1c; }
+        #log { margin-top: 20px; font-family: monospace; background: #eee; padding: 10px; border-radius: 4px; min-height: 40px;}
     </style>
 </head>
 <body>
-
     <div class="card">
-        <h1>Internal Tools Sandbox Test</h1>
-        <p>Environment: <strong id="env-label">Production</strong></p>
-        <p>This is a test application deployed via Cloudflare Pages.</p>
+        <h1>Dashboard Diagnostics</h1>
+        <p>Use these controls to push data to your Cloudflare metrics.</p>
         
-        <button id="test-btn">Click to Test Interaction</button>
-        <p id="result-text"></p>
+        <button class="btn-normal" onclick="runTest('/api/normal')">1. Generate Subrequest (Test Networking)</button>
+        <button class="btn-heavy" onclick="runTest('/api/heavy')">2. Run Heavy Compute (Spike CPU Time)</button>
+        <button class="btn-error" onclick="runTest('/api/error')">3. Trigger System Crash (Test Error Logging)</button>
+
+        <div id="log">Awaiting input...</div>
     </div>
 
     <script>
-        let count = 0;
-        document.getElementById('test-btn').addEventListener('click', () => {
-            count++;
-            document.getElementById('result-text').innerText = `Button clicked ${count} times.`;
-        });
+        async function runTest(endpoint) {
+            const logEl = document.getElementById('log');
+            logEl.innerText = `Pinging ${endpoint}...`;
+            try {
+                const response = await fetch(endpoint);
+                const text = await response.text();
+                logEl.innerText = `Response [${response.status}]:\n${text}`;
+            } catch (err) {
+                logEl.innerText = `Network Error (Expected if testing crash):\n${err.message}`;
+            }
+        }
     </script>
-
 </body>
 </html>

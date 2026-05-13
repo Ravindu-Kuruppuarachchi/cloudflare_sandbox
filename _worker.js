@@ -1,16 +1,33 @@
 export default {
   async fetch(request, env) {
-    // 1. Log the incoming request (This activates the compute engine)
     const url = new URL(request.url);
-    console.log(`Incoming request for: ${url.pathname}`);
 
-    // 2. Fetch the static assets (your index.html) from Cloudflare's cache
-    const response = await env.ASSETS.fetch(request);
+    // TEST 1: The Subrequest
+    // Cloudflare tracks every time your worker talks to an external server.
+    if (url.pathname === '/api/normal') {
+      const externalApiCall = await fetch('https://jsonplaceholder.typicode.com/todos/1');
+      const data = await externalApiCall.json();
+      return new Response(`Subrequest completed! Fetched data: ${data.title}`, { status: 200 });
+    }
 
-    // 3. Optional: Modify the response by adding a custom security/tracking header
-    const modifiedResponse = new Response(response.body, response);
-    modifiedResponse.headers.set('X-ISA-Environment', 'Sandbox-Compute-Active');
+    // TEST 2: The CPU Spike
+    // This forces the processor to do heavy math, raising the "CPU Time" metric.
+    if (url.pathname === '/api/heavy') {
+      let uselessMath = 0;
+      for (let i = 0; i < 5000000; i++) {
+        uselessMath += Math.sqrt(i);
+      }
+      return new Response(`Heavy compute finished. CPU Time should register a spike. Result: ${uselessMath}`, { status: 200 });
+    }
 
-    return modifiedResponse;
+    // TEST 3: The Uncaught Exception
+    // This intentionally attempts to read a variable that doesn't exist to trigger a 500 Error.
+    if (url.pathname === '/api/error') {
+      console.log(thisVariableDoesNotExist.crashTheSystem);
+      return new Response("You will never see this message.", { status: 200 });
+    }
+
+    // Default: Serve the HTML page for any other route
+    return env.ASSETS.fetch(request);
   }
 };
