@@ -1,12 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "metrics-sandbox",
-  "main": "_worker.js",
-  "compatibility_date": "2024-05-13",
+  "name": "metrics-sandbox",// Change this to your desired project name
+  
+  // 1. Point this to the entry file inside your extracted backend folder
+  // (Change to "backend/index.py" if it is a Python backend)
+  "main": "backend/index.js", 
+  
+  "compatibility_date": "2024-05-15",
+
+  // 2. Tell Cloudflare where to find the frontend after the pipeline builds it
+  // Check your frontend's package.json. If it builds to "dist", use this:
   "assets": {
-    "directory": "./public",
+    "directory": "./frontend/dist",
     "binding": "ASSETS"
   },
+
   "observability": {
     "enabled": true
   }
