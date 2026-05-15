@@ -1,15 +1,10 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "metrics-sandbox",// Change this to your desired project name
-  
-  // 1. Point this to the entry file inside your extracted backend folder
-  // (Change to "backend/index.py" if it is a Python backend)
-  "main": "backend/index.js", 
-  
-  "compatibility_date": "2024-05-15",
+  "name": "metrics-sandbox",
+  "main": "backend/src/index.ts",
+  "compatibility_date": "2026-05-12",
+  "compatibility_flags": ["nodejs_compat"],
 
-  // 2. Tell Cloudflare where to find the frontend after the pipeline builds it
-  // Check your frontend's package.json. If it builds to "dist", use this:
   "assets": {
     "directory": "./frontend/dist",
     "binding": "ASSETS"
@@ -17,5 +12,40 @@
 
   "observability": {
     "enabled": true
+  },
+
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "docker.io/cloudflare/sandbox:0.10.1"
+    }
+  ],
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "class_name": "Sandbox",
+        "name": "Sandbox"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": ["Sandbox"]
+    }
+  ],
+
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "isa_sandbox_db",
+      "database_id": "9665cb62-7874-4a0d-9018-4b273a8ba894"
+    }
+  ],
+
+  "vars": {
+    "ALLOWED_ORIGIN": "http://localhost:5173"
   }
 }

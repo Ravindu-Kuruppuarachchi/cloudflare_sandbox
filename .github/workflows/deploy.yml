@@ -32,23 +32,21 @@ jobs:
           npm run build
 
       # ---------------------------------------------------------
-      # AUTO-DETECT: D1 DATABASE MIGRATIONS
+      # AUTO-DETECT: D1 SCHEMA
       # ---------------------------------------------------------
-      - name: Apply D1 Database Migrations
-        if: hashFiles('db/migrations/*.sql') != ''
+      - name: Apply D1 Schema
+        if: hashFiles('backend/schema.sql') != ''
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: |
-          echo "Database migrations detected. Applying..."
-          # Extracts the database name dynamically from the wrangler.jsonc file
+          echo "Schema detected. Applying to remote D1..."
           DB_NAME=$(grep -o '"database_name": "[^"]*"' wrangler.jsonc | cut -d'"' -f4)
-          if [ ! -z "$DB_NAME" ]; then
-            wrangler d1 migrations apply $DB_NAME --remote
-          else
-            echo "Error: .sql files found, but no database_name defined in wrangler.jsonc!"
+          if [ -z "$DB_NAME" ]; then
+            echo "Error: backend/schema.sql found, but no database_name defined in wrangler.jsonc!"
             exit 1
           fi
+          wrangler d1 execute "$DB_NAME" --remote --file=./backend/schema.sql
 
       # ---------------------------------------------------------
       # CORE DEPLOYMENT (Auto-handles R2, Durable Objects, Python, etc.)
