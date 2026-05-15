@@ -3,7 +3,6 @@
   "name": "metrics-sandbox",
   "main": "backend/src/index.ts",
   "compatibility_date": "2026-05-12",
-  "compatibility_flags": ["nodejs_compat"],
 
   "assets": {
     "directory": "./frontend/dist",
@@ -13,29 +12,6 @@
   "observability": {
     "enabled": true
   },
-
-  "containers": [
-    {
-      "class_name": "Sandbox",
-      "image": "docker.io/cloudflare/sandbox:0.10.1"
-    }
-  ],
-
-  "durable_objects": {
-    "bindings": [
-      {
-        "class_name": "Sandbox",
-        "name": "Sandbox"
-      }
-    ]
-  },
-
-  "migrations": [
-    {
-      "tag": "v1",
-      "new_sqlite_classes": ["Sandbox"]
-    }
-  ],
 
   "d1_databases": [
     {
