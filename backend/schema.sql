@@ -1,26 +1,33 @@
--- Users: tracks who can run code and their daily quota
-CREATE TABLE IF NOT EXISTS users (
-  id           TEXT PRIMARY KEY,
-  email        TEXT NOT NULL UNIQUE,
-  daily_limit  INTEGER NOT NULL DEFAULT 50,
-  created_at   INTEGER NOT NULL DEFAULT (unixepoch())
+-- Remove old sandbox tables
+DROP TABLE IF EXISTS execution_logs;
+DROP TABLE IF EXISTS users;
+
+-- Categories
+CREATE TABLE IF NOT EXISTS categories (
+  id   INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT    NOT NULL UNIQUE
 );
 
--- Execution logs: one row per Sandbox run, used for rate limiting + audit
-CREATE TABLE IF NOT EXISTS execution_logs (
-  id          TEXT PRIMARY KEY,
-  user_id     TEXT NOT NULL REFERENCES users(id),
-  code        TEXT NOT NULL,
-  stdout      TEXT,
-  stderr      TEXT,
-  exit_code   INTEGER,
-  duration_ms INTEGER,
-  created_at  INTEGER NOT NULL DEFAULT (unixepoch())
+-- Inventory items
+CREATE TABLE IF NOT EXISTS items (
+  id                  TEXT    PRIMARY KEY,
+  name                TEXT    NOT NULL,
+  description         TEXT    NOT NULL DEFAULT '',
+  category_id         INTEGER REFERENCES categories(id) ON DELETE SET NULL,
+  quantity            INTEGER NOT NULL DEFAULT 0,
+  unit                TEXT    NOT NULL DEFAULT 'unit',
+  price               REAL    DEFAULT NULL,
+  low_stock_threshold INTEGER NOT NULL DEFAULT 10,
+  created_at          INTEGER NOT NULL DEFAULT (unixepoch()),
+  updated_at          INTEGER NOT NULL DEFAULT (unixepoch())
 );
 
-CREATE INDEX IF NOT EXISTS idx_exec_user_created
-  ON execution_logs(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_items_category ON items(category_id);
+CREATE INDEX IF NOT EXISTS idx_items_name     ON items(name);
 
--- Seed a demo user so the PoC works without real auth wired up
-INSERT OR IGNORE INTO users (id, email, daily_limit)
-VALUES ('demo-user', 'demo@isa.ae', 50);
+INSERT OR IGNORE INTO categories (name) VALUES
+  ('Electronics'),
+  ('Furniture'),
+  ('Office Supplies'),
+  ('Hardware'),
+  ('Other');
