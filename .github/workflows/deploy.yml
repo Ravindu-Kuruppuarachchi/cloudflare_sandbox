@@ -12,10 +12,22 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # Because your 'assets' directory is set to "." in wrangler.jsonc,
-      # Wrangler will automatically grab index.html and bundle it with _worker.js!
+      # 1. Set up the Node environment
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # 2. Explicitly install Wrangler globally to fix the 'npx' error
+      - name: Install Cloudflare Wrangler
+        run: npm install -g wrangler@latest
+
+      # 3. Deploy to Cloudflare
       - name: Deploy using Cloudflare Wrangler
         uses: cloudflare/wrangler-action@v3
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
