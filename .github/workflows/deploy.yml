@@ -1,4 +1,4 @@
-name: Deploy ISA Metrics Sandbox
+name: ISA Universal Cloudflare Deployment
 
 on:
   push:
@@ -6,24 +6,54 @@ on:
       - main
 
 jobs:
-  deploy-to-cloudflare:
+  deploy-architecture:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 1. Set up the Node environment (UPGRADED TO NODE 22)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      # 2. Explicitly install Wrangler globally
       - name: Install Cloudflare Wrangler
         run: npm install -g wrangler@latest
 
-      # 3. Deploy to Cloudflare
-      - name: Deploy using Cloudflare Wrangler
+      # ---------------------------------------------------------
+      # AUTO-DETECT: FRONTEND
+      # ---------------------------------------------------------
+      - name: Build Frontend UI
+        if: hashFiles('frontend/package.json') != ''
+        run: |
+          echo "Frontend detected. Building..."
+          cd frontend
+          npm install
+          npm run build
+
+      # ---------------------------------------------------------
+      # AUTO-DETECT: D1 DATABASE MIGRATIONS
+      # ---------------------------------------------------------
+      - name: Apply D1 Database Migrations
+        if: hashFiles('db/migrations/*.sql') != ''
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: |
+          echo "Database migrations detected. Applying..."
+          # Extracts the database name dynamically from the wrangler.jsonc file
+          DB_NAME=$(grep -o '"database_name": "[^"]*"' wrangler.jsonc | cut -d'"' -f4)
+          if [ ! -z "$DB_NAME" ]; then
+            wrangler d1 migrations apply $DB_NAME --remote
+          else
+            echo "Error: .sql files found, but no database_name defined in wrangler.jsonc!"
+            exit 1
+          fi
+
+      # ---------------------------------------------------------
+      # CORE DEPLOYMENT (Auto-handles R2, Durable Objects, Python, etc.)
+      # ---------------------------------------------------------
+      - name: Deploy to Cloudflare Edge
         uses: cloudflare/wrangler-action@v3
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
